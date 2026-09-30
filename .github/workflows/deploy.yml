@@ -1,0 +1,51 @@
+name: Deploy to Alibaba Cloud OSS
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+      OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+      OSS_REGION: cn-hongkong
+      OSS_ENDPOINT: https://oss-cn-hongkong.aliyuncs.com
+      OSS_BUCKET: bluzy-space-site
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install ossutil
+        run: |
+          curl -o ossutil.zip https://gosspublic.alicdn.com/ossutil/v2/2.4.0/ossutil-2.4.0-linux-amd64.zip
+          unzip -q ossutil.zip
+          sudo install -m 755 ossutil-2.4.0-linux-amd64/ossutil /usr/local/bin/ossutil
+          ossutil --version
+
+      - name: Upload to OSS
+        run: |
+          ossutil cp -r dist/ oss://${OSS_BUCKET}/ -f

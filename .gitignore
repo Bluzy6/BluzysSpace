@@ -9,6 +9,7 @@
 
 # 环境变量与密钥
 .env
+.env.*
 .env.local
 .env.*.local
 *.pem
@@ -24,6 +25,7 @@ Thumbs.db
 
 # Node.js / JavaScript / TypeScript
 node_modules/
+.vite/
 *.tsbuildinfo
 dist/
 build/
